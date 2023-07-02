@@ -4,12 +4,12 @@
 // Para debudar os valores de OPT:
 #define DEBUG_MODE false
 
-
 class Ligas{
 
 public:
     int * list;
     int size;
+    int * path;
     Ligas(int size){
         this->list = new int[size];
         this->size = size;
@@ -19,18 +19,21 @@ public:
             std::cin>>list[i];
         }
     }
-    int minimium(int demand)
+    int minimium(int amount)
     {
-        if (demand == 0)
+        if (amount == 0)
         {
             return 0;
         }
-        int *opt = new int[demand + 1];
+        this->path = new int [amount+ 1];
+        int *opt = new int[amount + 1];
         opt[0] = 0;
+        this->path[0] = 0;
 
-        for (int i = 1; i <= demand; i++)
+        for (int i = 1; i <= amount; i++)
         {
             int minimumOpt = INF;
+            path[i] = INF;
             /* Para cada liga possível, eu vejo qual é a menor combinação possível partindo dos resultados anteriores
             Para a demanda 40, o opt[40] = opt[40-20]+1. Porque com a liga de 20, percebe-se que é a combinação dela 1 vez com opt[20] que a usa uma vez.
             */
@@ -47,20 +50,24 @@ public:
                     // Testa qual combinação de liga é menor para todas as ligas possíveis
                     bool ligaIsLower = (1 + opt[i - liga]) < minimumOpt;
                     // Se a combinação com a liga j for a menor combinação testada, é considerado que a liga será utilizada na combinação
-                    minimumOpt = ligaIsLower ? 1 + opt[i - liga] : minimumOpt;
+                    minimumOpt = ligaIsLower ? (1 + opt[i - liga]) : minimumOpt;
+                    path[i] = ligaIsLower ? liga : path[i];
+
                 }
             }
             if (minimumOpt != INF)
             {
+
                 opt[i] = minimumOpt;
             }
         }
         // Apenas para análise
         if (DEBUG_MODE)
         {
-            printOptTable(opt, demand + 1);
+            printOptTable(opt, amount + 1);
+            printPath(amount+1);
         }
-        return opt[demand];
+        return opt[amount];
 
     }
 
@@ -72,24 +79,42 @@ public:
         }
         return;
     }
+    void printPath( int size)
+    {
+        std::cout << "Reconstruir o caminho - Top Down:\n   ";
+
+        for( int position  = size-1; (position)>0 ; )
+        {
+            int liga = path[position];
+            position-= liga;
+            std::cout << liga;
+             if (position != 0)
+            {
+              std::cout  << " ==> ";
+            }
+            else
+            {
+                std::cout << std::endl;
+            }
+        }
+        return;
+    }
 };
-
-
 
 
 
 int main(int argc, char const *argv[]) {
 
-    int qtdTestes, ligasAmount, demand;
+    int qtdTestes, ligasAmount, amount;
     std::cin>> qtdTestes;
 
     for (int i = 0; i < qtdTestes; i++)
     {
         // Lendo as entradas do teste i
-        std::cin>> ligasAmount >>  demand;
+        std::cin>> ligasAmount >>  amount;
         Ligas * ligas =  new Ligas(ligasAmount);
         ligas->readEntries();
-        std::cout << ligas->minimium(demand)<<std::endl;
+        std::cout << ligas->minimium(amount)<<std::endl;
         // Desaloca o array de liga
         delete ligas;
     }
